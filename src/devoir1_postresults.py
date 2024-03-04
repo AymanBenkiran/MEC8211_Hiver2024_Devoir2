@@ -66,7 +66,7 @@ def convergence_compar(norm_l, n_l,
     les différentes normes utilisées et enregistre le graphique dans un
     dossier spécifié
     Entrees:
-        - norm_l:ARRAY of Tuples with the norm's name'
+        - norm_l: ARRAY of Tuples with the norm's name'
         - n_l: ARRAY of Abscisses for the Convergence Graph
         - typAnalyse: STR Type of Convergence Analysis
         - path_save: STR Desired Directory When Saving The Graph

@@ -9,6 +9,7 @@ Date de creation du fichier : 5 février 2024
 
 #%% Importation des modules
 import numpy as np
+import pandas as pd
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csc_matrix
 import os
@@ -139,7 +140,7 @@ def mdf2_rxn_0(prm_prob, prm_sim):
     # Condition initiale
     c = np.full(n, prm_prob.c0)
     c[-1] = prm_prob.ce
-        
+
     while diff > prm_sim.tol:
         sum_c_prec = sum(c)
 
@@ -163,6 +164,85 @@ def mdf2_rxn_0(prm_prob, prm_sim):
 
     prm_sim.c = c
     prm_sim.tf = tf
+
+
+#%% mdf2_rxn_1
+def mdf2_rxn_1(prm_prob, prm_sim):
+    """
+    Fonction qui resout par le probleme transitoire pour une reaction d'ordre 1
+    jusqu'a l'atteinte du regime permanent par la methode des differences finies
+    (Schemas d'ordre globaux 1 en temps et 2 en espace).
+        - En r = 0 : Un schema Gear avant est utilise pour approximer le
+                     gradient de concentration (ordre 2)
+        - Pour les points centraux :
+            - Derivee premiere : differentiation centree (ordre 2)
+            - Derivee seconde : differentiation centree (ordre 3)
+        - En r = R : Une condition de Dirichlet est imposee
+
+    Entrees :
+        - prm_prob : Objet qui contient les parametres du probleme
+            - c0 : float - Concentrations initiales [mol/m^3]
+            - ce : float - Concentration de sel de l'eau salee [mol/m^3]
+            - r : float - Rayon du pilier cylindrique [m]
+            - d_eff : float - Coefficient de diffusion effectif de sel dans
+                      le beton [m^2/s]
+            - ordre_de_rxn : int - Ordre de la cinetique de reaction du
+                             terme source (0 ou 1) []
+            - s : float - Terme source constant (reaction d'ordre 0) [mol/m^3/s]
+            - k : float - Constante de reaction pour la reaction d'ordre 1 [s^{-1}]
+        - prm_sim : Objet qui contient les parametres de simulation
+            - n_noeuds : int - Nombre de noeuds dans le maillage [noeud]
+            - dr : float - Pas en espace des differents maillages [m]
+            - dt : float - Pas de temps des differents maillages [s]
+            - mesh : array de floats - Vecteur conteant les noeuds (r_i)
+                     du probleme 1D [m]
+            - tol : float - Tolerance relative pour l'atteinte du regime
+                    permanent []
+            - c : array de float - Solution une fois l'atteinte du regime
+                  permanent [mol/m^3]
+            - tf : float - Temps de fin de la simulation [s]
+            - mdf : int - Ordre global en espace de la methode des differences
+                    finies utilisee []
+            - ordre_de_rxn : int - Ordre de la cinetique de reaction du
+                             terme source []
+            - t : array de float - Vecteur des temps des solutions de la simulation [s]
+    Sortie : aucune
+    """
+    t = 0
+    diff = prm_sim.tol+1
+    n = prm_sim.n_noeuds
+    a = np.zeros((n, n))
+    b = np.zeros(n)
+
+    # Condition initiale
+    c = np.full(n, prm_prob.c0)
+    c[-1] = prm_prob.ce
+
+    while t < prm_sim.tf:
+        sum_c_prec = sum(c)
+
+        # Conditions frontieres
+        appliquer_conditions_frontieres(a, b, prm_prob.ce)
+
+        # Points centraux
+        cst1 = prm_sim.dt*prm_prob.d_eff
+        for i in range(1, n-1):
+            cst2 = 2 * prm_sim.dr**2 * prm_sim.mesh[i]  # 2 * r_i * dr^2
+            a[i][i-1] = cst1*(prm_sim.dr - 2*prm_sim.mesh[i])
+            a[i][i] = cst2 + 4*cst1*prm_sim.mesh[i] + cst2*prm_sim.dt*prm_prob.k
+            a[i][i+1] = -cst1*(prm_sim.dr + 2*prm_sim.mesh[i])
+            b[i] = cst2*c[i]
+
+        # Resolution du systeme lineaire
+        a_sparse = csc_matrix(a)
+        c = spsolve(a_sparse, b)
+        t += prm_sim.dt
+
+        c_results=np.transpose([c])
+
+        # Stockage des resultats
+        prm_sim.c = np.append(prm_sim.c, [c], axis=0)
+        prm_sim.t = np.append(prm_sim.t, t)
 
 
 #%% appliquer_conditions_frontieres
@@ -217,8 +297,13 @@ def analytique(prm_prob, mesh):
         - c : array de float - Le profil de concentration radial analytique
               au regime permanent [mol/m^3]
     """
-    c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
-         + prm_prob.ce for r in mesh]
+    if (prm_prob.ordre_de_rxn == 0):
+        c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
+            + prm_prob.ce for r in mesh]
+    else:
+        df_comsol = pd.read_csv(f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv")
+        c = df_comsol.loc[:, "C(r)"].values
+        # raise ValueError("La solution analytique pour cet ordre n'est pas implementee.")
     return c
 
 

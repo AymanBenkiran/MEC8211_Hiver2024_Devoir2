@@ -8,7 +8,7 @@ Auteur.e.s : Amishga Alphonius (2030051), Ayman Benkiran (1984509) et Maxence Fa
 Date de creation du fichier : 5 fevrier 2024
 '''
 
-#%% Importation des modules
+# %% Importation des modules
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -16,8 +16,9 @@ import os
 
 # Importation des fonctions
 try:
-    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
-                                   erreur_l2, erreur_linfty, get_path_results)
+    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, mdf2_rxn_1, analytique,
+                                   erreur_l1, erreur_l2, erreur_linfty,
+                                   get_path_results)
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_functions.py")
 
@@ -27,7 +28,8 @@ try:
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_postresults.py")
 
-#%% Donnees du probleme et definition des classes
+
+# %% Donnees du probleme et definition des classes
 
 class ParametresProb:
     """
@@ -46,17 +48,17 @@ class ParametresProb:
         - s : float - Terme source constant (reaction d'ordre 0) [mol/m^3/s]
         - k : float - Constante de réaction pour la reaction d'ordre 1 [s^{-1}]
     """
+
     def __init__(self, ordre_de_rxn: int):
         self.c0 = 0.0
         self.ce = 12.0
-        self.r = 1*0.5
+        self.r = 1 * 0.5
         self.d_eff = 1e-10
         self.ordre_de_rxn = ordre_de_rxn
         if self.ordre_de_rxn == 0:
             self.s = 8e-9
         elif self.ordre_de_rxn == 1:
             self.k = 4e-9
-            raise ValueError("Cet ordre n'est pas encore implememte.")
         else:
             raise ValueError("L'ordre de reaction doit etre de 0 ou 1.")
 
@@ -86,40 +88,43 @@ class ParametresSim:
         - tf : float - Temps de fin de la simulation [s]
         - mdf : int - Ordre global en espace de la methode des differences finies utilisee []
         - ordre_de_rxn : int - Ordre de la cinetique de reaction du terme source []
+        - t : array of floats - Vecteur des temps des solutions de la simulation [s]
     """
-    def __init__(self, prm_rxn: ParametresProb, p_n_noeuds: int, p_mdf: int):
+
+    def __init__(self, prm_rxn: ParametresProb, p_n_noeuds: int, p_mdf: int,
+                 p_dt_factor: float, p_tf: float, p_study_type: str):
         self.n_noeuds = p_n_noeuds
-        self.dr = prm_rxn.r/(self.n_noeuds-1)
-        self.dt = 0.5*1e-2**2/prm_rxn.d_eff
+        self.dr = prm_rxn.r / (self.n_noeuds - 1)
+        self.dt = 0.5 * 1e-2 ** 2 / prm_rxn.d_eff * p_dt_factor
         self.mesh = np.linspace(0, prm_rxn.r, self.n_noeuds)
         self.tol = 1e-14
-        self.c = np.zeros(self.n_noeuds)
-        self.tf = 0
+        self.c = np.zeros((1, self.n_noeuds))
+        self.tf = p_tf
         self.mdf = p_mdf
         self.ordre_de_rxn = prm_rxn.ordre_de_rxn
+        self.t = np.empty(0)
+        self.study_type = p_study_type
 
 
-#%% Initialisation des objects contenants les parametres du probleme pour une reaction d'ordre 0
-#   et 1
+# %% Initialisation des objects contenants les parametres du probleme pour une reaction d'ordre 1
 
-prm_rxn_0 = ParametresProb(ordre_de_rxn=0)
-# TODO
-# prm_rxn_1 = ParametresProb(ordre_de_rxn=1) # pas encore implemente
+prm_rxn_1 = ParametresProb(ordre_de_rxn=1)
 
+# %% Discretisation pour la reaction d'ordre 1
 
-#%% Discretisation pour la reaction d'ordre 0
-
-n_noeuds_liste = [10, 20, 40, 80]   # Liste de nombre de noeuds pour les differents
-                                    # maillages [noeud]
+n_noeuds_liste = [10, 20, 40, 80]  # Liste de nombre de noeuds pour les differents
+# maillages [noeud]
+dt_factors_list = [1, 2, 4, 8]  # Liste de facteurs multipliant le pas de temps du probleme [-]
 
 # Initialisation des differents maillages a l'etude
-prm_simulations_mdf1_rxn0 = []
-prm_simulations_mdf2_rxn0 = []
+prm_simulations_mdf2_rxn1_dr = []
+prm_simulations_mdf2_rxn1_dt = []
 for i, n_noeuds in enumerate(n_noeuds_liste):
-    prm_simulations_mdf1_rxn0.append(ParametresSim(prm_rxn_0, n_noeuds, 1))
-    prm_simulations_mdf2_rxn0.append(ParametresSim(prm_rxn_0, n_noeuds, 2))
+    prm_simulations_mdf2_rxn1_dr.append(ParametresSim(prm_rxn_1, n_noeuds, 2, 1, 1e10, "Spatial"))
+for i, dt_factor in enumerate(dt_factors_list):
+    prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 40, 2, dt_factor, 1e8, "Temporal"))
 
-#%% Création des Répertoires de Solution
+# %% Création des Répertoires de Solution
 
 actual_path = os.getcwd()
 if os.name == "nt":
@@ -130,9 +135,9 @@ else:
 path_donnees = get_path_results(actual_path, file_sep_str, 'data')
 path_analyse = get_path_results(actual_path, file_sep_str, 'results')
 
-#%% Resolution du probleme
+# %% Resolution du probleme du devoir 2
 
-for prm_simulation in [prm_simulations_mdf1_rxn0, prm_simulations_mdf2_rxn0]:
+for prm_simulation in [prm_simulations_mdf2_rxn1_dr]:
     print("****************************************************************************")
     for prm_sim in prm_simulation:
         mdf_i = prm_sim.mdf
@@ -140,10 +145,16 @@ for prm_simulation in [prm_simulations_mdf1_rxn0, prm_simulations_mdf2_rxn0]:
 
         # Calcul de la concentration au regime permanent
         # pylint: disable-next=exec-used
-        exec(f"mdf{mdf_i}_rxn_{ordre_de_rxn}(prm_rxn_0, prm_sim)")
+        exec(f"mdf{mdf_i}_rxn_{ordre_de_rxn}(prm_rxn_{ordre_de_rxn}, prm_sim)")
+
+        # Solution numerique
+        if ordre_de_rxn == 0:
+            c_numerique = prm_sim.c
+        elif ordre_de_rxn == 1:
+            c_numerique = prm_sim.c[-1, :]
 
         # Exportation des solutions dans des fichiers csv
-        exported_data = pd.DataFrame({'r': prm_sim.mesh, 'C(r)': prm_sim.c})
+        exported_data = pd.DataFrame({'r': prm_sim.mesh, 'C(r)': c_numerique})
 
         exported_data.to_csv(f"{path_donnees}/mdf{mdf_i}_rxn{ordre_de_rxn}_noeuds_"
                              f"{str(prm_sim.n_noeuds).zfill(3)}.csv", index=False)
@@ -158,64 +169,109 @@ for prm_simulation in [prm_simulations_mdf1_rxn0, prm_simulations_mdf2_rxn0]:
         print(f"tf = {prm_sim.tf} s")
 print("****************************************************************************")
 
-#%% Etude de l'erreur
+# For movie... later
+# fig = plt.figure()
+# ax = plt.Subplot(fig, 111)
+# fig.set_figheight(6)
+# fig.set_figwidth(10)
+# prm_sim = prm_simulations_mdf2_rxn1_dr[-1]
+# xi, yi = np.meshgrid(prm_sim.mesh, np.linspace(0,1,2))
+# z = np.array([prm_sim.c[-1, :],prm_sim.c[-1, :]])
+# plt.contourf(xi, yi, z)
+# ax.set_yticks([])
+# plt.colorbar()
+# plt.show()
+
+# %% Etude de l'erreur
 
 # Initialisation de listes pour entreposer les donnees pour l'affichage graphique
-dr = []                     # Pas en espace [m]
-liste_erreur_l1 = []        # Erreur L1 [mol/m^3]
-liste_erreur_l2 = []        # Erreur L2
-liste_erreur_linfty = []    # Erreur Linfty
+dr = []  # Pas en espace [m]
+liste_erreur_l1 = []  # Erreur L1 [mol/m^3]
+liste_erreur_l2 = []  # Erreur L2
+liste_erreur_linfty = []  # Erreur Linfty
 
 # Calcul des erreurs pour les differentes simulations
-for prm_simulation in [prm_simulations_mdf1_rxn0, prm_simulations_mdf2_rxn0]:
+for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_dt]:
     dr = []
+    dt = []
     liste_erreur_l1 = []
     liste_erreur_l2 = []
     liste_erreur_linfty = []
     for prm_sim in prm_simulation:
         mdf_i = prm_sim.mdf
         ordre_de_rxn = prm_sim.ordre_de_rxn
+        dt_i = prm_sim.dt
+        dt.append(dt_i)
         dr.append(prm_sim.dr)
 
         # Solution analytique [mol/m^3]
-        c_analytique = analytique(prm_rxn_0, prm_sim.mesh)
+        c_analytique = analytique(prm_rxn_1, prm_sim.mesh)
 
-        liste_erreur_l1.append(erreur_l1(prm_sim.c, c_analytique))
-        liste_erreur_l2.append(erreur_l2(prm_sim.c, c_analytique))
-        liste_erreur_linfty.append(erreur_linfty(prm_sim.c, c_analytique))
-        
+        # Solution numerique
+        if ordre_de_rxn == 0:
+            c_numerique = prm_sim.c
+        elif ordre_de_rxn == 1:
+            c_numerique = prm_sim.c[-1, :]
+
+        liste_erreur_l1.append(erreur_l1(c_numerique, c_analytique))
+        liste_erreur_l2.append(erreur_l2(c_numerique, c_analytique))
+        liste_erreur_linfty.append(erreur_linfty(c_numerique, c_analytique))
+
         # Comparaison graphique des solutions
         n_noeuds = prm_sim.n_noeuds
-        title_analytique = f"Comparaison_Analytique_mdf{mdf_i}_noeuds{n_noeuds}"
-        plot_stationnary_compar(prm_sim.mesh, c_analytique, prm_sim.c,
-                                plotting = False,
-                                path_save = path_analyse,
-                                title = title_analytique,
-                                num_label = f"Solution par Différences Finies (mdf{mdf_i}, n={n_noeuds})")
-        
-    # Exportation des valeurs d'erreur dans un fichier csv
-    exported_data = pd.DataFrame({'dr': dr, 'L1_error': liste_erreur_l1,
-                                  'L2_error': liste_erreur_l2,
-                                  'Linfty_error': liste_erreur_linfty})
-    
-    exported_data.to_csv(f"{path_analyse}/erreurs_mdf{mdf_i}_rxn{ordre_de_rxn}.csv", index=False)
+        title_analytique = f"Comparaison_Analytique_mdf{mdf_i}_noeuds{n_noeuds}_dt{'{:.2e}'.format(dt_i)}"
+        plot_stationnary_compar(prm_sim.mesh, c_analytique, c_numerique,
+                                plotting=False,
+                                path_save=path_analyse,
+                                title=title_analytique,
+                                num_label=f"Solution par Différences Finies (mdf{mdf_i}, n={n_noeuds}, dt={'{:.2e}'.format(dt_i)})")
 
-
-    # Affichage graphique
+    # Pour l'affichage graphique
     title_errors = f"erreurs_mdf{mdf_i}"
-    errors_l = [('Erreur $L^1$',liste_erreur_l1), 
-                ('Erreur $L^2$',liste_erreur_l2), 
-                ('Erreur $L^\inf$',liste_erreur_linfty)]
-    convergence_compar(errors_l, dr, 
-                           typAnalyse = "Spatial", 
-                           path_save = path_analyse,
-                           title = title_errors)
+    errors_l = [('Erreur $L^1$', liste_erreur_l1),
+                ('Erreur $L^2$', liste_erreur_l2),
+                ('Erreur $L^\inf$', liste_erreur_linfty)]
+
+    if prm_simulation[0].study_type == "Spatial":
+        # Pour l'exportation des valeurs d'erreur dans un fichier csv
+        exported_data = pd.DataFrame({'dr': dr, 'L1_error': liste_erreur_l1,
+                                      'L2_error': liste_erreur_l2,
+                                      'Linfty_error': liste_erreur_linfty})
+        # Pour l'affichage graphique
+        convergence_compar(errors_l, dr,
+                           typAnalyse=prm_simulation[0].study_type,
+                           path_save=path_analyse,
+                           title=title_errors)
+        # Pour la verification des ordres numeriques
+        type_detude = "espace"
+    elif prm_simulation[0].study_type == "Temporal":
+        # Pour l'exportation des valeurs d'erreur dans un fichier csv
+        exported_data = pd.DataFrame({'dt': dt_i, 'L1_error': liste_erreur_l1,
+                                      'L2_error': liste_erreur_l2,
+                                      'Linfty_error': liste_erreur_linfty})
+        # Pour l'affichage graphique
+        convergence_compar(errors_l, dt,
+                           typAnalyse=prm_simulation[0].study_type,
+                           path_save=path_analyse,
+                           title=title_errors)
+        # Pour la verification des ordres numeriques
+        type_detude = "temps"
+
+    # Exportation des valeurs d'erreur dans un fichier csv
+    exported_data.to_csv(f"{path_analyse}/erreurs_mdf{mdf_i}_rxn{ordre_de_rxn}_dt{'{:.2e}'.format(dt_i)}.csv", index=False)
 
     # Verification des ordres numeriques
+    print("****************************************************************************")
+    print(f" CONVERGENCE EN {type_detude.upper()}")
+    print("****************************************************************************")
     for name_error, norm in errors_l:
         name_norm = name_error.split()[-1]
-        mdf_i = prm_simulation[0].mdf
-        ordre = ordre_convergence(dr, norm)
-        print(f"L'ordre observe du schema numerique est {ordre} pour la norme"
+        ordre_theorique = prm_simulation[0].mdf
+        if prm_simulation[0].study_type == "Spatial":
+            ordre = ordre_convergence(dr, norm)
+        elif prm_simulation[0].study_type == "Temporal":
+            ordre = ordre_convergence(dt, norm)
+            ordre_theorique = 1
+        print(f"L'ordre observe du schema numerique en {type_detude} est {ordre} pour la norme"
               f" {name_norm}")
-        print(f"L'ordre théorique du schéma est {mdf_i}")
+        print(f"L'ordre théorique du schéma en {type_detude} est {ordre_theorique}")
