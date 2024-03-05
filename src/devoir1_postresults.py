@@ -60,6 +60,7 @@ def plot_stationnary_compar(r_l, st_sol, sim_sol,
 
 def convergence_compar(norm_l, n_l,
                        typAnalyse = "Spatial",
+                       n_fit = -1,
                        path_save = '',
                        title = ''):
     """ Construit et affiche un graphe de convergences des erreurs selon
@@ -78,8 +79,12 @@ def convergence_compar(norm_l, n_l,
 
     plt.figure()
     for name_norm, norm_l in norm_l:
-
-        ordre, cste = np.polyfit(np.log10(n_l), np.log10(norm_l), 1)
+        if n_fit != -1:
+            n_lfit, norm_lfit = n_l[:n_fit], norm_l[:n_fit]
+        else:
+            n_lfit, norm_lfit = n_l, norm_l
+        
+        ordre, cste = np.polyfit(np.log10(n_lfit), np.log10(norm_lfit), 1)
         ordre, cste = format(ordre, '.2f'), format(cste, '.2f')
 
         if typAnalyse == "Spatial":
@@ -100,15 +105,6 @@ def convergence_compar(norm_l, n_l,
         plt.title("Convergence Temporelle: Évolution des Erreurs dans le cylindre")
         plt.xlabel(r"$\Delta t$ [s]")
 
-
-    if typAnalyse == "Spatial":
-        plt.title("Convergence Spatiale: Évolution des Erreurs dans le cylindre")
-        plt.xlabel(r"$\Delta r$ [m]")
-
-    if typAnalyse == "Temporal":
-        plt.title("Convergence Temporelle: Évolution des Erreurs dans le cylindre")
-        plt.xlabel(r"$\Delta t$ [s]")
-
     plt.ylabel(r"Erreur [mol/m$^3$]")
     plt.grid(linestyle = '-')
     plt.legend()
@@ -120,19 +116,23 @@ def convergence_compar(norm_l, n_l,
             plt.savefig(typAnalyse + "_Convergence.png", dpi=600)
     plt.show()
 
-def ordre_convergence(dr_l, error_l):
+def ordre_convergence(dstep_l, error_l, n_fit = -1):
     """
     Utilise la bibliotheque Numpy pour determiner l'ordre de convergence d'un
-    schema numerique a partir d'une discretisation spatiale et des erreurs associees
+    schema numerique
     Entrees:
-        - dr_l: ARRAY ou LIST, liste contenant les points de la discretisation
-        radiale du cylindre
+        - dstep_l: ARRAY ou LIST, liste contenant les points de la discretisation
+        spatiale ou temporelle
         - error_l: ARRAY ou LIST, liste contenant les erreurs du schema numerique
-        etant donne une norme et une discretisation spatiale
+        etant donne une norme et une discretisation temporelle ou spatiale
     Sorties:
         - m: FLOAT Ordre de convergence du schéma
     """
-
-    ordre, b = np.polyfit(np.log10(dr_l), np.log10(error_l), 1)
+    if n_fit != -1:
+        dstep_lfit, error_lfit = dstep_l[:n_fit], error_l[:n_fit]
+    else:
+        dstep_lfit, error_lfit = dstep_l, error_l
+    ordre, b = np.polyfit(np.log10(dstep_lfit), np.log10(error_lfit), 1)
 
     return ordre
+
