@@ -112,7 +112,7 @@ class ParametresSim:
 
 # %% Initialisation des objects contenants les parametres du probleme pour une reaction d'ordre 1
 
-study = "MMS" # Type d'étude: Avec ("MMS") ou sans la MMS ("Classic")
+study = "Classic" # Type d'étude: Avec ("MMS") ou sans la MMS ("Classic")
 prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 
 # %% Discretisation pour la reaction d'ordre 1
@@ -254,14 +254,15 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
             err_l1 = 0.0
             err_l2 = 0.0
             err_linf = 0.0
-            solution_numerique = prm_sim.c[1:]
-            solution_analytique = c_analytique[1:]
+            solution_numerique = prm_sim.c#[1:]
+            solution_analytique = c_analytique#[1:]
+            n_temps = len(solution_numerique)
             for c_n, c_a in zip(solution_numerique, solution_analytique):
                 err_l1 += erreur_l1(c_n, c_a)
                 err_l2 += erreur_l2(c_n, c_a)
                 err_linf += erreur_linfty(c_n, c_a)
-            liste_erreur_l1.append(err_l1/len(solution_numerique))
-            liste_erreur_l2.append(err_l2/len(solution_numerique))
+            liste_erreur_l1.append(err_l1/n_temps)
+            liste_erreur_l2.append(err_l2/n_temps)
             liste_erreur_linfty.append(err_linf)
 
         # Comparaison graphique des solutions
@@ -269,17 +270,19 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         title_analytique = f"Comparaison_Analytique_mdf{mdf_i}_noeuds{n_noeuds}_dt{'{:.1e}'.format(dt_i)}"
 
         if (ordre_de_rxn == 0):
-            plot_stationnary_compar(prm_sim.mesh, c_analytique[-1], c_numerique[-1, :],
+            plot_stationnary_compar(prm_sim.mesh, c_analytique, c_numerique,
                                     plotting=False,
                                     path_save=path_analyse,
                                     title=title_analytique,
-                                    num_label=f"Solution par Différences Finies (mdf{mdf_i}, n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
+                                    num_label=f"Solution par Différences Finies (mdf{mdf_i},"
+                                              f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
         elif ordre_de_rxn == 1:
             plot_transient_compar(prm_sim.mesh, c_analytique, c_numerique,
                                     plotting=False,
                                     path_save=path_analyse,
                                     title=title_analytique,
-                                    num_label=f"Solution par Différences Finies (mdf{mdf_i}, n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
+                                    num_label=f"Solution par Différences Finies (mdf{mdf_i},"
+                                              f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
 
     # Pour l'affichage graphique
     title_errors = f"erreurs_mdf{mdf_i}"
@@ -299,7 +302,7 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
                            path_save=path_analyse,
                            title=title_errors)
         # Pour la verification des ordres numeriques
-        type_detude = "espace"
+        type_detude_str = "espace"
     elif prm_simulation[0].study_type == "Temporal":
         # Pour l'exportation des valeurs d'erreur dans un fichier csv
         exported_data = pd.DataFrame({'dt': dt_i, 'L1_error': liste_erreur_l1,
@@ -312,14 +315,15 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
                            path_save=path_analyse,
                            title=title_errors)
         # Pour la verification des ordres numeriques
-        type_detude = "temps"
+        type_detude_str = "temps"
 
     # Exportation des valeurs d'erreur dans un fichier csv
-    exported_data.to_csv(f"{path_analyse}/erreurs_mdf{mdf_i}_rxn{ordre_de_rxn}_dt{'{:.1e}'.format(dt_i)}.csv", index=False)
+    exported_data.to_csv(f"{path_analyse}/erreurs_mdf{mdf_i}_rxn{ordre_de_rxn}_dt"
+                         f"{'{:.1e}'.format(dt_i)}.csv", index=False)
 
     # Verification des ordres numeriques
     print("****************************************************************************")
-    print(f" CONVERGENCE EN {type_detude.upper()}")
+    print(f" CONVERGENCE EN {type_detude_str.upper()}")
     print("****************************************************************************")
     for name_error, norm in errors_l:
         name_norm = name_error.split()[-1]
@@ -329,6 +333,6 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         elif prm_simulation[0].study_type == "Temporal":
             ordre = ordre_convergence(dt, norm, n_fit = n_fit)
             ordre_theorique = 1
-        print(f"L'ordre observe du schema numerique en {type_detude} est {ordre} pour la norme"
-              f" {name_norm}")
-        print(f"L'ordre théorique du schéma en {type_detude} est {ordre_theorique}")
+        print(f"L'ordre observe du schema numerique en {type_detude_str} est {ordre} "
+              f"pour la norme {name_norm}")
+        print(f"L'ordre théorique du schéma en {type_detude_str} est {ordre_theorique}")
