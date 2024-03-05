@@ -1,8 +1,8 @@
 """
 MEC8211 - Devoir 2 : Verification de code - MMS
-Fichier : devoir1_functions.py
+Fichier : devoir2_functions.py
 Description : Fichier secondaire contenant les fonctions pour le devoir 2
-              (a utiliser conjointement avec devoir1_main.py)
+              (a utiliser conjointement avec devoir2_main.py)
 Auteur.e.s : Amishga Alphonius (2030051), Ayman Benkiran (1984509) et Maxence Farin (2310129)
 Date de creation du fichier : 5 février 2024
 """

@@ -1,9 +1,9 @@
 """
 MEC8211 - Devoir 2 : Verification de code - MMS
-Fichier : devoir1_tests_unitaires.py
-Description : Fichier tertiaire contenant les fonctions de tests unitaires pour le devoir 1
+Fichier : devoir2_tests_unitaires.py
+Description : Fichier tertiaire contenant les fonctions de tests unitaires pour le devoir 2
               (a utiliser separement)
-Lancer avec :  python3 devoir1_tests_unitaires.py
+Lancer avec :  python3 devoir2_tests_unitaires.py
 Auteur.e.s : Amishga Alphonius (2030051), Ayman Benkiran (1984509) et Maxence Farin (2310129)
 Date de creation du fichier : 5 février 2024
 """
@@ -13,12 +13,12 @@ import numpy as np
 
 # Importation des fonctions
 try:
-    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
+    from devoir2_functions import (mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
                                    erreur_l2, erreur_linfty)
-    from devoir1_main import (ParametresProb)
-    from devoir1_postresults import (ordre_convergence)
+    from devoir2_main import (ParametresProb)
+    from devoir2_postresults import (ordre_convergence)
 except ImportError:
-    print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_functions.py ou devoir1_main")
+    print("ERREUR ! Il y a une erreur fatale dans le fichier devoir2_functions.py ou devoir2_main")
     
 #%% test_errors
 def test_errors():

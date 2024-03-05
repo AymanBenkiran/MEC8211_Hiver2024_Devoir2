@@ -1,8 +1,8 @@
 """
 MEC8211 - Devoir 2 : Verification de code - MMS
-Fichier : devoir1_post_results.py
+Fichier : devoir2_post_results.py
 Description : Fichier secondaire 
-              (a utiliser conjointement avec devoir1_main.py)
+              (a utiliser conjointement avec devoir2_main.py)
 Auteur.e.s : Amishga Alphonius (2030051), Ayman Benkiran (1984509) et Maxence Farin (2310129)
 Date de creation du fichier : 10 février 2024
 """
@@ -11,11 +11,13 @@ Date de creation du fichier : 10 février 2024
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from moviepy.editor import VideoClip
+from moviepy.video.io.bindings import mplfig_to_npimage
 
 
 """ Post Results """
 
-# Solution
+#%% Solution
 
 def plot_stationnary_compar(r_l, st_sol, sim_sol,
                             plotting = False,
@@ -55,8 +57,55 @@ def plot_stationnary_compar(r_l, st_sol, sim_sol,
     if plotting is True:
         plt.show()
 
+def plot_transient_compar(r_l, comsol_sols, sim_sols,
+                            plotting = False,
+                            path_save = '',
+                            title = '',
+                            num_label = ''):
+    """ Plot the spatial distribution of salt concentration of
+    the stationnary solution and the finite differences solution
+    Entrees:
+        - r_l: ARRAY of Spatial Nodes
+        - st_sol: ARRAY of Stationnary Solution Values at Nodes
+        - sim_sol: ARRAY of Simulation Solution Values at Nodes
+        - plotting: BOOL to Determine if We Want to Plot Here the Graph
+        - path_save: STR Desired Directory When Saving The Graph
+        - title: STR Desired Title of the Graph When Saving The File
+        - num_label: STR numeric solution label
 
-# Erreurs
+    Sortie:
+        - FIGURE Graphique de la concentration en sel dans le cylindre
+        """
+
+    plt.figure()
+    i = 0
+    for c_n, c_a in zip(sim_sols, comsol_sols):
+        if i == 0:
+            plt.plot(r_l, c_a, "k", label = 'Solution Analytique')
+            plt.plot(r_l, c_n, "b--", label = num_label)
+            i += 1
+        else:
+            plt.plot(r_l, c_a, "k")
+            plt.plot(r_l, c_n, "b--")
+    plt.xlabel("Rayon du Cylindre (m)")
+    plt.ylabel(r"Concentration en sel (mol/m$^3$)")
+    plt.title("Comparaison des solutions analytique et numérique")
+    plt.legend()
+    plt.grid(linestyle = '--')
+    if path_save != '':
+        os.chdir(path_save)
+        if title != '':
+            plt.savefig(title+".png", dpi=600)
+        else:
+            plt.savefig("ComparaisonSolAnalytique.png", dpi=600)
+
+    if plotting is True:
+        plt.show()
+
+#%% Video
+
+
+#%% Erreurs
 
 def convergence_compar(norm_l, n_l,
                        typAnalyse = "Spatial",
@@ -135,4 +184,3 @@ def ordre_convergence(dstep_l, error_l, n_fit = -1):
     ordre, b = np.polyfit(np.log10(dstep_lfit), np.log10(error_lfit), 1)
 
     return ordre
-
