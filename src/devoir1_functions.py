@@ -10,6 +10,7 @@ Date de creation du fichier : 5 février 2024
 #%% Importation des modules
 import numpy as np
 import pandas as pd
+import csv
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csc_matrix
 import os
@@ -301,9 +302,16 @@ def analytique(prm_prob, mesh):
         c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
             + prm_prob.ce for r in mesh]
     else:
-        df_comsol = pd.read_csv(f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv")
-        c = df_comsol.loc[:, "C(r)"].values
-        # raise ValueError("La solution analytique pour cet ordre n'est pas implementee.")
+        c = []
+        file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
+
+        with (open(file, 'r') as f):
+            first_line = f.readline().strip('\n').split(',')
+            first_line = first_line[1:]
+
+        df_comsol = pd.read_csv(file)
+        for time in first_line:
+            c.append(df_comsol.loc[:, f"{time}"].values)
     return c
 
 
@@ -319,6 +327,7 @@ def erreur_l1(c_num, c_analytique):
     Sortie :
         - erreur : float - Norme de l'erreur L1 de la solution numerique [mol/m^3]
     """
+
     erreur = sum(abs(ci_num - ci_analytique)
                   for ci_num, ci_analytique in zip(c_num, c_analytique))
     erreur *= 1/len(c_num)
