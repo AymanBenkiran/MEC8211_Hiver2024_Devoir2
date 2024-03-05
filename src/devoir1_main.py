@@ -16,9 +16,9 @@ import os
 
 # Importation des fonctions
 try:
-    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, mdf2_rxn_1, analytique,
+    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, mdf2_rxn_1, mdf2_rxn_1MMS, analytique,
                                    erreur_l1, erreur_l2, erreur_linfty,
-                                   get_path_results)
+                                   get_path_results, f_MMS, MMS_Func)
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_functions.py")
 
@@ -49,7 +49,7 @@ class ParametresProb:
         - k : float - Constante de réaction pour la reaction d'ordre 1 [s^{-1}]
     """
 
-    def __init__(self, ordre_de_rxn: int):
+    def __init__(self, ordre_de_rxn: int, p_study_type: str):
         self.c0 = 0.0
         self.ce = 12.0
         self.r = 1 * 0.5
@@ -61,6 +61,10 @@ class ParametresProb:
             self.k = 4e-9
         else:
             raise ValueError("L'ordre de reaction doit etre de 0 ou 1.")
+        self.study_type = p_study_type
+        if p_study_type == "MMS":
+            self.MMS = None
+            self.outdir = "MMS"
 
 
 class ParametresSim:
@@ -108,21 +112,33 @@ class ParametresSim:
 
 # %% Initialisation des objects contenants les parametres du probleme pour une reaction d'ordre 1
 
-prm_rxn_1 = ParametresProb(ordre_de_rxn=1)
+#Type d'étude: Avec ou sans la MMS
+study = "Classic"
+
+prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 
 # %% Discretisation pour la reaction d'ordre 1
 
 n_noeuds_liste = [10, 20, 40, 80]  # Liste de nombre de noeuds pour les differents
 # maillages [noeud]
-dt_factors_list = [1]  # Liste de facteurs multipliant le pas de temps du probleme [-]
+# Initialisation du temps de simulation et du pas de temps
+if prm_rxn_1.study_type == "Classic":
+    dt_f_prob, tf_prob = 1, 1e8
+    dt_factors_list = [1]
+elif prm_rxn_1.study_type == "MMS":
+    dt_f_prob, tf_prob = 10 * prm_rxn_1.d_eff, 1
+    dt_factors_list = [10 * prm_rxn_1.d_eff]
 
 # Initialisation des differents maillages a l'etude
 prm_simulations_mdf2_rxn1_dr = []
 prm_simulations_mdf2_rxn1_dt = []
+
 for i, n_noeuds in enumerate(n_noeuds_liste):
-    prm_simulations_mdf2_rxn1_dr.append(ParametresSim(prm_rxn_1, n_noeuds, 2, 1, 1e8, "Spatial"))
+    prm_simulations_mdf2_rxn1_dr.append(ParametresSim(prm_rxn_1, n_noeuds, 2, dt_f_prob, tf_prob, 
+                                                      "Spatial"))
 for i, dt_factor in enumerate(dt_factors_list):
-    prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 40, 2, dt_factor, 1e8, "Temporal"))
+    prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 40, 2, dt_factor, 1e8,
+                                                      "Temporal"))
 
 # %% Création des Répertoires de Solution
 
@@ -135,7 +151,17 @@ else:
 path_donnees = get_path_results(actual_path, file_sep_str, 'data')
 path_analyse = get_path_results(actual_path, file_sep_str, 'results')
 
+if prm_rxn_1.study_type == "MMS":
+    path_donnees = get_path_results(actual_path, file_sep_str,
+                                    'data' + file_sep_str + prm_rxn_1.outdir)
+    path_analyse = get_path_results(actual_path, file_sep_str,
+                                    'results' + file_sep_str + prm_rxn_1.outdir)
+
 # %% Resolution du probleme du devoir 2
+type_prob = ""
+if prm_rxn_1.study_type == "MMS":
+    type_prob = "MMS"
+    prm_rxn_1.MMS = f_MMS(prm_rxn_1)
 
 for prm_simulation in [prm_simulations_mdf2_rxn1_dr]:
     print("****************************************************************************")
@@ -145,7 +171,7 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]:
 
         # Calcul de la concentration au regime permanent
         # pylint: disable-next=exec-used
-        exec(f"mdf{mdf_i}_rxn_{ordre_de_rxn}(prm_rxn_{ordre_de_rxn}, prm_sim)")
+        exec(f"mdf{mdf_i}_rxn_{ordre_de_rxn}{type_prob}(prm_rxn_{ordre_de_rxn}, prm_sim)")
 
         # Solution numerique
         if ordre_de_rxn == 0:
@@ -190,6 +216,12 @@ liste_erreur_l1 = []  # Erreur L1 [mol/m^3]
 liste_erreur_l2 = []  # Erreur L2
 liste_erreur_linfty = []  # Erreur Linfty
 
+#Initialisation des Données sur la solution analytique
+method = prm_rxn_1.study_type
+if method == "Classic":
+    n_fit = -1
+elif method == "MMS":
+    n_fit = 2
 # Calcul des erreurs pour les differentes simulations
 for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1_dt
     dr = []
@@ -201,12 +233,13 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         mdf_i = prm_sim.mdf
         ordre_de_rxn = prm_sim.ordre_de_rxn
         dt_i = prm_sim.dt
+        tf_i = prm_sim.tf
         dt.append(dt_i)
         dr.append(prm_sim.dr)
         c_numerique = prm_sim.c
 
         # Solution analytique [mol/m^3]
-        c_analytique = analytique(prm_rxn_1, prm_sim.mesh)
+        c_analytique = analytique(prm_rxn_1, prm_sim.mesh, method = method, tools = (tf_i, dt_i))
 
         if ordre_de_rxn == 0:
             c_numerique = prm_sim.c
@@ -249,6 +282,7 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         # Pour l'affichage graphique
         convergence_compar(errors_l, dr,
                            typAnalyse=prm_simulation[0].study_type,
+                           n_fit = n_fit,
                            path_save=path_analyse,
                            title=title_errors)
         # Pour la verification des ordres numeriques
@@ -261,6 +295,7 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         # Pour l'affichage graphique
         convergence_compar(errors_l, dt,
                            typAnalyse=prm_simulation[0].study_type,
+                           n_fit = n_fit,
                            path_save=path_analyse,
                            title=title_errors)
         # Pour la verification des ordres numeriques
@@ -277,9 +312,9 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         name_norm = name_error.split()[-1]
         ordre_theorique = prm_simulation[0].mdf
         if prm_simulation[0].study_type == "Spatial":
-            ordre = ordre_convergence(dr, norm)
+            ordre = ordre_convergence(dr, norm, n_fit = n_fit)
         elif prm_simulation[0].study_type == "Temporal":
-            ordre = ordre_convergence(dt, norm)
+            ordre = ordre_convergence(dt, norm, n_fit = n_fit)
             ordre_theorique = 1
         print(f"L'ordre observe du schema numerique en {type_detude} est {ordre} pour la norme"
               f" {name_norm}")
