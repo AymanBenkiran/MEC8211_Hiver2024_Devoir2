@@ -10,10 +10,45 @@ Date de creation du fichier : 5 février 2024
 #%% Importation des modules
 import numpy as np
 import pandas as pd
-import csv
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import csc_matrix
+from typing import Tuple
+import sympy as sp
 import os
+
+
+#%% Classe stockant les objets nécessaires à la MMS
+class MMS_Func:
+    def __init__(self, f, source, x):
+        
+        self.f = f
+        self.df = sp.diff(f,x)
+        self.source = source
+    
+    def lambdify(self, symbols):
+        
+        self.f = sp.lambdify(symbols, self.f, modules="sympy")
+        self.df = sp.lambdify(symbols, self.df, modules="sympy")
+        self.source = sp.lambdify(symbols, self.source, modules="sympy")
+        
+    def evaluate_f(self, variables: Tuple[float]):
+        
+        x,t = variables
+        
+        return self.f(x,t)
+    
+    def evaluate_df(self, variables: Tuple[float]):
+        
+        x,t = variables
+        
+        return self.df(x,t)
+    
+    def evaluate_s(self, variables: Tuple[float]):
+        
+        x,t = variables
+
+        
+        return self.source(x,t)
 
 #%% mdf1_rxn_0
 def mdf1_rxn_0(prm_prob, prm_sim):
@@ -72,7 +107,7 @@ def mdf1_rxn_0(prm_prob, prm_sim):
         sum_c_prec = sum(c)
 
         # Conditions frontieres
-        appliquer_conditions_frontieres(a, b, prm_prob.ce)
+        appliquer_conditions_frontieres(a, b, 0., prm_prob.ce)
 
         # Points centraux
         cst1 = prm_sim.dt*prm_prob.d_eff
@@ -146,7 +181,7 @@ def mdf2_rxn_0(prm_prob, prm_sim):
         sum_c_prec = sum(c)
 
         # Conditions frontieres
-        appliquer_conditions_frontieres(a, b, prm_prob.ce)
+        appliquer_conditions_frontieres(a, b, 0., prm_prob.ce)
 
         # Points centraux
         cst1 = prm_sim.dt*prm_prob.d_eff
@@ -210,7 +245,6 @@ def mdf2_rxn_1(prm_prob, prm_sim):
     Sortie : aucune
     """
     t = 0
-    diff = prm_sim.tol+1
     n = prm_sim.n_noeuds
     a = np.zeros((n, n))
     b = np.zeros(n)
@@ -220,10 +254,9 @@ def mdf2_rxn_1(prm_prob, prm_sim):
     c[-1] = prm_prob.ce
 
     while t < prm_sim.tf:
-        sum_c_prec = sum(c)
 
         # Conditions frontieres
-        appliquer_conditions_frontieres(a, b, prm_prob.ce)
+        appliquer_conditions_frontieres(a, b, 0., prm_prob.ce)
 
         # Points centraux
         cst1 = prm_sim.dt*prm_prob.d_eff
@@ -239,7 +272,63 @@ def mdf2_rxn_1(prm_prob, prm_sim):
         c = spsolve(a_sparse, b)
         t += prm_sim.dt
 
-        c_results=np.transpose([c])
+        # c_results=np.transpose([c])
+
+        # Stockage des resultats
+        prm_sim.c = np.append(prm_sim.c, [c], axis=0)
+        prm_sim.t = np.append(prm_sim.t, t)
+
+
+
+def mdf2_rxn_1MMS(prm_prob, prm_sim):
+    """
+     Fonction qui resout par le probleme transitoire pour une reaction d'ordre 1
+    jusqu'a l'atteinte du regime permanent par la methode des differences finies
+    (Schemas d'ordre globaux 1 en temps et 2 en espace), en s'appuyant sur
+    la MMS
+    Parameters
+    ----------
+    prm_prob : ParametresProb
+        Objet contenant tous les paramètres du problème et les données MMS
+    prm_sim : ParametresSim
+        Objet contenant tous les paramètres de la simulation
+    Returns
+    -------
+    None.
+    """
+    t = 0
+    n = prm_sim.n_noeuds
+    a = np.zeros((n, n))
+    b = np.zeros(n)
+    obj_MMS = prm_prob.MMS
+
+    # Condition initiale
+    c = np.array([0.0 for i in range(n)])
+    for i in range(prm_sim.n_noeuds):
+        c[i] =  obj_MMS.evaluate_f((prm_sim.mesh[i],t))
+
+    while t < prm_sim.tf:
+
+        # Conditions frontieres
+        neumann = obj_MMS.evaluate_df((prm_sim.mesh[-1],t))
+        dirichlet = obj_MMS.evaluate_f((prm_sim.mesh[-1],t))
+        appliquer_conditions_frontieres(a, b, neumann, dirichlet)
+
+        # Points centraux
+        cst1 = prm_sim.dt*prm_prob.d_eff
+        for i in range(1, n-1):
+            cst2 = 2 * prm_sim.dr**2 * prm_sim.mesh[i]  # 2 * r_i * dr^2
+            a[i][i-1] = cst1*(prm_sim.dr - 2*prm_sim.mesh[i])
+            a[i][i] = cst2 + 4*cst1*prm_sim.mesh[i] + cst2*prm_sim.dt*prm_prob.k
+            a[i][i+1] = -cst1*(prm_sim.dr + 2*prm_sim.mesh[i])
+            t_source = obj_MMS.evaluate_s((prm_sim.mesh[i], t))
+            b[i] = c[i] + prm_sim.dt * t_source
+            b[i] = cst2 * b[i]
+
+        # Resolution du systeme lineaire
+        a_sparse = csc_matrix(a)
+        c = spsolve(a_sparse, b)
+        t += prm_sim.dt
 
         # Stockage des resultats
         prm_sim.c = np.append(prm_sim.c, [c], axis=0)
@@ -248,7 +337,7 @@ def mdf2_rxn_1(prm_prob, prm_sim):
 
 #%% appliquer_conditions_frontieres
 
-def appliquer_conditions_frontieres(a, b, dirichlet):
+def appliquer_conditions_frontieres(a, b, neumann, dirichlet):
     """
     Fonction qui ajoute les conditions frontieres dans le systeme lineaire
         - En r = 0 : Un schema de Gear avant est utilise pour approximer
@@ -267,7 +356,7 @@ def appliquer_conditions_frontieres(a, b, dirichlet):
     a[0][0] = -3.
     a[0][1] = 4.
     a[0][2] = -1.
-    b[0] = 0.
+    b[0] = neumann
 
     # Dirichlet en r = r
     a[-1][-1] = 1.
@@ -275,7 +364,7 @@ def appliquer_conditions_frontieres(a, b, dirichlet):
 
 
 #%% analytique
-def analytique(prm_prob, mesh):
+def analytique(prm_prob, mesh, method = "Classic", tools =()):
     """
     Fonction qui calcule la solution analytique aux points du maillage.
 
@@ -298,22 +387,76 @@ def analytique(prm_prob, mesh):
         - c : array de float - Le profil de concentration radial analytique
               au regime permanent [mol/m^3]
     """
-    if (prm_prob.ordre_de_rxn == 0):
-        c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
-            + prm_prob.ce for r in mesh]
+    if method == "Classic":
+        if (prm_prob.ordre_de_rxn == 0):
+            c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
+                + prm_prob.ce for r in mesh]
+        else:
+            c = []
+            file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
+
+            with (open(file, 'r') as f):
+                first_line = f.readline().strip('\n').split(',')
+                first_line = first_line[1:]
+
+            df_comsol = pd.read_csv(file)
+            for time in first_line:
+                c.append(df_comsol.loc[:, f"{time}"].values)
+
+    elif method == "MMS":
+        func = prm_prob.MMS
+
+        if (prm_prob.ordre_de_rxn == 0):
+            tf, dt = tools
+            # dt n'est pas utilisé mais cela permet d'écrire
+            #  de manière générique l'appel de analytique()
+            c = [float(func.evaluate_f((r, tf))) for r in mesh]
+
+        else:
+            t = 0.0
+            tf, dt = tools
+            c = np.zeros((1, len(mesh)))
+
+            while t < tf:
+                c_t = [float(func.evaluate_f((r, t))) for r in mesh]
+                c = np.append(c, [c_t], axis=0)
+                t += dt
+
     else:
-        c = []
-        file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
+        raise Exception("Unidentified Method for Function Discretization")
 
-        with (open(file, 'r') as f):
-            first_line = f.readline().strip('\n').split(',')
-            first_line = first_line[1:]
-
-        df_comsol = pd.read_csv(file)
-        for time in first_line:
-            c.append(df_comsol.loc[:, f"{time}"].values)
     return c
 
+#%% MMS Functions
+
+def f_MMS(prm_rxn):
+    """
+    Fonction définissant la fonction choisie pour la MMS, ainsi que
+    sa première dérivée spatiale, et le terme source lié à notre équation
+    Parameters
+    ----------
+    prm_rxn : ParametresProb
+        Objet contenant tous les paramètres du problème
+
+    Returns
+    -------
+    obj_MMS: MMS_Func Object
+        Objet contenant toutes les données liées à notre fonction dans
+        la MMS
+    """
+    
+    r, t = sp.symbols('r t')
+    symbols = [r, t]
+    C_MMS = sp.sin(sp.pi * r / (2 * prm_rxn.r)) * sp.exp(- sp.pi * sp.Pow(t,1))
+    if prm_rxn.ordre_de_rxn == 0:
+        source = sp.diff(C_MMS, t) - prm_rxn.d_eff * sp.diff(sp.diff(C_MMS,r), r) + prm_rxn.s
+    elif prm_rxn.ordre_de_rxn == 1:
+        source = sp.diff(C_MMS, t) - prm_rxn.d_eff * sp.diff(sp.diff(C_MMS,r), r) + prm_rxn.k * C_MMS
+    
+    obj_MMS = MMS_Func(C_MMS, source, r)
+    obj_MMS.lambdify(symbols)
+    
+    return obj_MMS
 
 #%% erreur_l1
 def erreur_l1(c_num, c_analytique):
