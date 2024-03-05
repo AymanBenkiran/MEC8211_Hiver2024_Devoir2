@@ -447,7 +447,7 @@ def f_MMS(prm_rxn):
     
     r, t = sp.symbols('r t')
     symbols = [r, t]
-    C_MMS = sp.sin(sp.pi * r / (2 * prm_rxn.r)) * sp.exp(- sp.pi * sp.Pow(t,1))
+    C_MMS = sp.cos(sp.pi * r / (2 * prm_rxn.r) + sp.pi/2) * sp.exp(- sp.pi * sp.Pow(t,1))
     if prm_rxn.ordre_de_rxn == 0:
         source = sp.diff(C_MMS, t) - prm_rxn.d_eff * sp.diff(sp.diff(C_MMS,r), r) + prm_rxn.s
     elif prm_rxn.ordre_de_rxn == 1:
