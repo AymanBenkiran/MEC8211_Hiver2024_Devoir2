@@ -1,5 +1,5 @@
 """
-MEC8211 - Devoir 1 : Verification de code
+MEC8211 - Devoir 2 : Verification de code - MMS
 Fichier : devoir1_post_results.py
 Description : Fichier secondaire 
               (a utiliser conjointement avec devoir1_main.py)

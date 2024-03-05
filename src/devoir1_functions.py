@@ -1,7 +1,7 @@
 """
-MEC8211 - Devoir 1 : Verification de code
+MEC8211 - Devoir 2 : Verification de code - MMS
 Fichier : devoir1_functions.py
-Description : Fichier secondaire contenant les fonctions pour le devoir 1
+Description : Fichier secondaire contenant les fonctions pour le devoir 2
               (a utiliser conjointement avec devoir1_main.py)
 Auteur.e.s : Amishga Alphonius (2030051), Ayman Benkiran (1984509) et Maxence Farin (2310129)
 Date de creation du fichier : 5 février 2024
@@ -15,6 +15,7 @@ from scipy.sparse import csc_matrix
 from typing import Tuple
 import sympy as sp
 import os
+import matplotlib.pyplot as plt
 
 
 #%% Classe stockant les objets nécessaires à la MMS
@@ -458,6 +459,57 @@ def f_MMS(prm_rxn):
     
     return obj_MMS
 
+def plot_MMS(prm_rxn, path_save = ''):
+    """
+    Fonction premettant de tracer en 2D la solution MMs choisie, selon la 
+    position spatialle et temporelle
+    Parameters
+    ----------
+    prm_rxn : ParametresProb
+        Objet contenant tous les paramètres du problème
+    path_save: 
+        Desired Directory When Saving The Graph
+
+    Returns
+    -------
+    aucun
+    """
+    r, t = sp.symbols('r t')
+    C = sp.cos(sp.pi * r / (2 * prm_rxn.r) + sp.pi/2) * sp.exp(-sp.pi * t)
+    
+    # Convert the SymPy expression to a NumPy-compatible function
+    f_func = sp.lambdify((r, t), C, modules='numpy')
+
+    # Generate x and y values using numpy
+    x_vals = np.linspace(0, 0.5, 100)
+    y_vals = np.linspace(0, 1.0, 100)
+
+    # Create a meshgrid from x and y
+    X, Y = np.meshgrid(x_vals, y_vals)
+
+    # Compute function values for each point in the meshgrid
+    Z = f_func(X, Y)
+
+    # Plot the 2D function
+    plt.figure()
+    plt.contourf(X, Y, Z, cmap='viridis')  # Adjust the colormap as needed
+    plt.colorbar()                         # Add a colorbar for reference
+    plt.xlabel('Radial position r (m)')
+    plt.ylabel('Time t (s)')
+    title = "2D Plot of MMS solution : C(r, t)"
+    plt.title(title)
+    plt.grid(True)
+    
+    # Save the figure in data folder
+    if path_save != '':
+        os.chdir(path_save)
+        if title != '':
+            plt.savefig(title+".png", dpi=600)
+        else:
+            plt.savefig("Solution C_mms.png", dpi=600)
+    
+    plt.show()
+    
 #%% erreur_l1
 def erreur_l1(c_num, c_analytique):
     """

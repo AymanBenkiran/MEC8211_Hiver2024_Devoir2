@@ -1,5 +1,5 @@
 '''
-MEC8211 - Devoir 1 : Verification de code
+MEC8211 - Devoir 2 : Verification de code - MMS
 
 Fichier : devoir1_main.py
 Description : Fichier principal pour le devoir 1
@@ -18,7 +18,7 @@ import os
 try:
     from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, mdf2_rxn_1, mdf2_rxn_1MMS, analytique,
                                    erreur_l1, erreur_l2, erreur_linfty,
-                                   get_path_results, f_MMS, MMS_Func)
+                                   get_path_results, f_MMS, plot_MMS, MMS_Func)
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_functions.py")
 
@@ -120,6 +120,7 @@ prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 # %% Discretisation pour la reaction d'ordre 1
 
 n_noeuds_liste = [10, 20, 40, 80]  # Liste de nombre de noeuds pour les differents
+
 # maillages [noeud]
 # Initialisation du temps de simulation et du pas de temps
 if prm_rxn_1.study_type == "Classic":
@@ -207,6 +208,9 @@ print("*************************************************************************
 # ax.set_yticks([])
 # plt.colorbar()
 # plt.show()
+
+# %% Plot de la solution MMS choisie
+plot_MMS(prm_rxn_1, path_donnees) 
 
 # %% Etude de l'erreur
 

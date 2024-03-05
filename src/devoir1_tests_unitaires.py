@@ -1,5 +1,5 @@
 """
-MEC8211 - Devoir 1 : Verification de code
+MEC8211 - Devoir 2 : Verification de code - MMS
 Fichier : devoir1_tests_unitaires.py
 Description : Fichier tertiaire contenant les fonctions de tests unitaires pour le devoir 1
               (a utiliser separement)
