@@ -391,19 +391,19 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
                            path_save=path_analyse,
                            title=f"./{result_subfolder}/{title_errors}")
 
-    if ordre_de_rxn == 1:
-        convergence_compar(errors_l_demi_temps, dt,
-                           typAnalyse=prm_simulation[0].study_type,
-                           n_fit=n_fit,
-                           path_save=path_analyse,
-                           title=f"./{result_subfolder}/demi_temps/{title_errors}")
-        convergence_compar(errors_l_temps_final, dt,
-                           typAnalyse=prm_simulation[0].study_type,
-                           n_fit=n_fit,
-                           path_save=path_analyse,
-                           title=f"./{result_subfolder}/temps_final/{title_errors}")
-        # Pour la verification des ordres numeriques
-        type_detude_str = "temps"
+        if ordre_de_rxn == 1:
+            convergence_compar(errors_l_demi_temps, dt,
+                               typAnalyse=prm_simulation[0].study_type,
+                               n_fit=n_fit,
+                               path_save=path_analyse,
+                               title=f"./{result_subfolder}/demi_temps/{title_errors}")
+            convergence_compar(errors_l_temps_final, dt,
+                               typAnalyse=prm_simulation[0].study_type,
+                               n_fit=n_fit,
+                               path_save=path_analyse,
+                               title=f"./{result_subfolder}/temps_final/{title_errors}")
+            # Pour la verification des ordres numeriques
+            type_detude_str = "temps"
 
     # Exportation des valeurs d'erreur dans un fichier csv
     exported_data.to_csv(f"{path_analyse}/{result_subfolder}/erreurs_mdf{mdf_i}_rxn{ordre_de_rxn}_dt"
