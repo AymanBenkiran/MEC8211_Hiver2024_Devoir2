@@ -91,6 +91,8 @@ def mdf1_rxn_0(prm_prob, prm_sim):
               finies utilisee []
             - ordre_de_rxn : int - Ordre de la cinetique de reaction du terme
               source []
+            - t : array de float - Vecteur des temps des solutions de la
+              simulation [s]
 
     Sortie : aucune
     """
@@ -166,6 +168,8 @@ def mdf2_rxn_0(prm_prob, prm_sim):
                     finies utilisee []
             - ordre_de_rxn : int - Ordre de la cinetique de reaction du
                              terme source []
+            - t : array de float - Vecteur des temps des solutions de la
+              simulation [s]
     Sortie : aucune
     """
     tf = 0
@@ -262,7 +266,7 @@ def mdf2_rxn_1(prm_prob, prm_sim):
         # Points centraux
         cst1 = prm_sim.dt*prm_prob.d_eff
         for i in range(1, n-1):
-            cst2 = 2 * prm_sim.dr**2 * prm_sim.mesh[i]  # 2 * r_i * dr^2
+            cst2 = 2 * prm_sim.dr**2 * prm_sim.mesh[i] # 2 * r_i * dr^2
             a[i][i-1] = cst1*(prm_sim.dr - 2*prm_sim.mesh[i])
             a[i][i] = cst2 + 4*cst1*prm_sim.mesh[i] + cst2*prm_sim.dt*prm_prob.k
             a[i][i+1] = -cst1*(prm_sim.dr + 2*prm_sim.mesh[i])
@@ -403,7 +407,6 @@ def analytique(prm_prob, mesh, method = "Classic", tools =()):
             df_comsol = pd.read_csv(file)
             for time in first_line:
                 c = np.append(c, [df_comsol.loc[:, f"{time}"].values], axis=0)
-                # c.append(df_comsol.loc[:, f"{time}"].values)
 
     elif method == "MMS":
         func = prm_prob.MMS

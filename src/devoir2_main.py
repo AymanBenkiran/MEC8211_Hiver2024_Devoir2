@@ -99,7 +99,7 @@ class ParametresSim:
                  p_dt_factor: float, p_tf: float, p_study_type: str):
         self.n_noeuds = p_n_noeuds
         self.dr = prm_rxn.r / (self.n_noeuds - 1)
-        self.dt = 5e5 * p_dt_factor #0.5 * 1e-2 ** 2 / prm_rxn.d_eff * p_dt_factor
+        self.dt = 0.5 * 1e-2 ** 2 / prm_rxn.d_eff * p_dt_factor
         self.mesh = np.linspace(0, prm_rxn.r, self.n_noeuds)
         self.tol = 1e-14
         self.c = np.zeros((1, self.n_noeuds))
@@ -118,12 +118,12 @@ prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 
 # %% Discretisation pour la reaction d'ordre 1
 
-n_noeuds_liste = [10, 20, 40, 80, 160] # Liste de nombre de noeuds pour les differents
-                                   # maillages [noeud]
+n_noeuds_liste = [10, 20, 40, 80, 160, 320] # Liste de nombre de noeuds pour les differents
+                                            # maillages [noeud]
 
 # Initialisation du temps de simulation et du pas de temps
 if prm_rxn_1.study_type == "Classic":
-    tf_prob = 1e6
+    tf_prob = 1e9
     dt_factors_list = [1]
 elif prm_rxn_1.study_type == "MMS":
     dt_f_prob, tf_prob = 10 * prm_rxn_1.d_eff, 1
@@ -258,17 +258,17 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
         elif ordre_de_rxn == 1:
             err_l1 = 0.0
             err_l2 = 0.0
-            err_linf = 0.0
-            solution_numerique = prm_sim.c#[1:]
-            solution_analytique = c_analytique#[1:]
+            err_linf = []
+            solution_numerique = prm_sim.c[1:]
+            solution_analytique = c_analytique[1:]
             n_temps = len(solution_numerique)
             for c_n, c_a in zip(solution_numerique, solution_analytique):
                 err_l1 += erreur_l1(c_n, c_a)
                 err_l2 += erreur_l2(c_n, c_a)
-                err_linf += erreur_linfty(c_n, c_a)
+                err_linf.append(erreur_linfty(c_n, c_a))
             liste_erreur_l1.append(err_l1/n_temps)
             liste_erreur_l2.append(err_l2/n_temps)
-            liste_erreur_linfty.append(err_linf)
+            liste_erreur_linfty.append(max(err_linf))
 
         # Comparaison graphique des solutions
         n_noeuds = prm_sim.n_noeuds
