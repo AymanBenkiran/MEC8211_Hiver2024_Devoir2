@@ -12,7 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- MAJOR Deleting the branch to try to solve an empty file issu in the current branch.
+- MAJOR Deleting the branch to try to solve an empty file issue in the current branch.
+- MAJOR Create a function to verify evaluation of source term in ``devoir1_test_unitaires.py``.
   
 ## [Ayman_version] - 2024-03-06
 
