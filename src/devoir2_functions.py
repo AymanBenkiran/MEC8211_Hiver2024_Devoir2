@@ -315,7 +315,7 @@ def mdf2_rxn_1MMS(prm_prob, prm_sim):
     while t < prm_sim.tf:
 
         # Conditions frontieres
-        neumann = obj_MMS.evaluate_df((prm_sim.mesh[-1],t))
+        neumann = 2 * prm_sim.dr * obj_MMS.evaluate_df((prm_sim.mesh[-1],t))
         dirichlet = obj_MMS.evaluate_f((prm_sim.mesh[-1],t))
         appliquer_conditions_frontieres(a, b, neumann, dirichlet)
 
