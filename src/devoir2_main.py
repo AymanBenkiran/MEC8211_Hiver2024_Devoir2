@@ -99,14 +99,15 @@ class ParametresSim:
                  p_dt_factor: float, p_tf: float, p_study_type: str):
         self.n_noeuds = p_n_noeuds
         self.dr = prm_rxn.r / (self.n_noeuds - 1)
-        self.dt = 5e4 * p_dt_factor #0.5 * 1e-2 ** 2 / prm_rxn.d_eff * p_dt_factor
+        self.dt = 5e5 * p_dt_factor #0.5 * 1e-2 ** 2 / prm_rxn.d_eff * p_dt_factor
         self.mesh = np.linspace(0, prm_rxn.r, self.n_noeuds)
         self.tol = 1e-14
         self.c = np.zeros((1, self.n_noeuds))
+        self.c[0, -1] = prm_rxn.ce
         self.tf = p_tf
         self.mdf = p_mdf
         self.ordre_de_rxn = prm_rxn.ordre_de_rxn
-        self.t = np.empty(0)
+        self.t = np.zeros(1)
         self.study_type = p_study_type
 
 
@@ -117,7 +118,7 @@ prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 
 # %% Discretisation pour la reaction d'ordre 1
 
-n_noeuds_liste = [20, 40, 80, 160] # Liste de nombre de noeuds pour les differents
+n_noeuds_liste = [10, 20, 40, 80, 160] # Liste de nombre de noeuds pour les differents
                                    # maillages [noeud]
 
 # Initialisation du temps de simulation et du pas de temps
@@ -244,6 +245,10 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
 
         # Solution analytique [mol/m^3]
         c_analytique = analytique(prm_rxn_1, prm_sim.mesh, method=method, tools=(tf_i, dt_i))
+        # Check dimensions
+        assert c_numerique.shape == c_analytique.shape, \
+            (f"Analytical solution has a shape of {c_numerique.shape},\n "
+             f"while the numerical solution has a shape of {c_analytique.shape}")
 
         if ordre_de_rxn == 0:
             c_numerique = prm_sim.c
@@ -274,14 +279,14 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr]: #prm_simulations_mdf2_rxn1
                                     plotting=False,
                                     path_save=path_analyse,
                                     title=title_analytique,
-                                    num_label=f"Solution par Différences Finies (mdf{mdf_i},"
+                                    num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
                                               f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
         elif ordre_de_rxn == 1:
             plot_transient_compar(prm_sim.mesh, c_analytique, c_numerique,
                                     plotting=False,
                                     path_save=path_analyse,
                                     title=title_analytique,
-                                    num_label=f"Solution par Différences Finies (mdf{mdf_i},"
+                                    num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
                                               f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
 
     # Pour l'affichage graphique
