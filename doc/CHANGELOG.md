@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## ********************************************************
 ## Homework 2
 
+## [Main] - 2024-03-06
+
+### Added
+
+- MAJOR Results from temporal analysis for MMS, in results directory. Results given for total simulation time of 0.5s and 1s
+
+### Changed
+
+- MINOR Updated name from 'devoir1' to 'devoir2' in files
+- MINOR Use of math.ceil() for order calculation during convergence analysis to round up to upper order instead of lower, in "devoir2_postresults.py"
+
 ## [Ayman_test] - 2024-03-06
 
 ### Removed
@@ -19,17 +30,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- MAJOR Deleting the branch to try to solve an empty file issu in the current branch.
+- MAJOR Deleting the branch to try to solve an empty file issue in the current branch.
   
 ## [Main] - 2024-03-05
 
 ### Added
 
+- MAJOR Entire process to manage MMS analysis, for spatial and temporal convergence in "devoir2_postresults.py","devoir2-functions.py" and "devoir2_mains.py"
 - MAJOR Creating a plot function to plot MMS solution.
 
 ### Changed 
 
 - MINOR Change in main to try to have a better convergence with MMS
+
+### Fixed
+
+- MAJOR Fixed calculation of $`L_inf`$ error.
 
 ## [Ayman_test] - 2024-03-03
 
