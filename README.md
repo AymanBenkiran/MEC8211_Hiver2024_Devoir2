@@ -25,7 +25,10 @@ To run the code, the following modules are required:
 
 - matplotlib
 - numpy
-- scipy 
+- scipy
+- sympy
+- math
+- typing
 - os
 
 # Code Architecture
