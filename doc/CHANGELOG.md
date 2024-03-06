@@ -1,9 +1,31 @@
 
 # Change log
-All notable changes to the 1st homework of MEC8211 are documented in this file.
+All notable changes to the 2nd homework of MEC8211 are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## [Main] - 2024-03-05
+
+### Added
+
+- MAJOR Creating a plot function to plot MMS solution.
+
+### Changed 
+
+- Minor Change in main to try to have a better convergence with MMS
+  
+## [Ayman_version] - 2024-03-03
+
+### Added
+
+- Major Adding Comsol file to src folder.
+
+## [Ayman_version] - 2024-03-01
+
+### Added
+
+- Major Creating two functions in functions file to evaluate analytical expressions with sympy, and visualize solution in the main.
+  
 ## [Main] - 2024-02-12
 
 ### Changed
