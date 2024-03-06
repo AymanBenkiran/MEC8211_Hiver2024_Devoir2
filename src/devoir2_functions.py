@@ -369,7 +369,7 @@ def appliquer_conditions_frontieres(a, b, neumann, dirichlet):
 
 
 #%% analytique
-def analytique(prm_prob, mesh, method = "Classic", tools =()):
+def analytique(prm_prob, mesh, study_type, dt_factor=1,  method = "Classic", tools =()):
     """
     Fonction qui calcule la solution analytique aux points du maillage.
 
@@ -398,7 +398,10 @@ def analytique(prm_prob, mesh, method = "Classic", tools =()):
                 + prm_prob.ce for r in mesh]
         else:
             c = np.empty((0, len(mesh)))
-            file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
+            if study_type == "Spatial":
+                file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
+            elif study_type == "Temporal":
+                file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}_DTFACTOR{dt_factor}.csv"
 
             with (open(file, 'r') as f):
                 first_line = f.readline().strip('\n').split(',')

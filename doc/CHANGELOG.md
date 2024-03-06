@@ -39,11 +39,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MINOR Added a script to clean up exported solutionm csv files from COMSOL`data/cleanup_solution_files.sh` .
 
+### Changed
+
+- MINOR Outputted results files are now organized in subfolders.
+
 ### Fixed
+
 - MAJOR Fixed calculation of $`L_inf`$ error.
+
+
+## [Main] - 2024-03-04
+
+### Added
+
+- MINOR 
+
+### Changed
+
+- MINOR 
+
+### Fixed
+
+- MAJOR 
 
 ## ********************************************************
 ## Homework 1
+
 
 ## [Main] - 2024-02-12
 
@@ -55,6 +76,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
  
 - MAJOR Update ``readme.md`` to account for the current state of the project.
   
+
 ## [Main] - 2024-02-11
 
 ### Changed
@@ -68,6 +90,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - MAJOR File architechture has changed to correspond to class requirements.
 - MAJOR Process to manage directories and files creation for storing results in ``devoir1_functions.py``.
 - MINOR Process to manage directories and files creations in ``devoir1_main.py``.
+
 
 ## [Main] - 2024-02-10
 
