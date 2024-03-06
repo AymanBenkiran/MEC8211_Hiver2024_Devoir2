@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MINOR Updated name from 'devoir1' to 'devoir2' in files
 - MINOR Use of math.ceil() for order calculation during convergence analysis to round up to upper order instead of lower, in "devoir2_postresults.py"
+- 
+### Fixed
+
+- MAJOR Correction of Gear definition for MMS solver in "devoir2-functions.py"
 
 ## [Ayman_test] - 2024-03-06
 
