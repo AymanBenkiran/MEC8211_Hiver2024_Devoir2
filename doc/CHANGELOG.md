@@ -4,6 +4,11 @@ All notable changes to the 2nd homework of MEC8211 are documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+
+## ********************************************************
+## Homework 2
+
+
 ## [Main] - 2024-03-05
 
 ### Added
@@ -14,24 +19,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MINOR Change in main to try to have a better convergence with MMS
   
-## [Ayman_version] - 2024-03-03
+## [Main] - 2024-03-03
 
 ### Added
 
 - MAJOR Adding Comsol file to src folder.
 
-- ## [Main] - 2024-03-02
+## [Main] - 2024-03-02
 
 ### Added
 
 - MAJOR Merge Ayman_version branch to the Main.
 
-## [Ayman_version] - 2024-03-01
+## [Main] - 2024-03-01
 
 ### Added
 
 - MAJOR Creating two functions in functions file to evaluate analytical expressions with sympy, and visualize solution in the main.
-  
+
+- MINOR Added a script to clean up exported solutionm csv files from COMSOL`data/cleanup_solution_files.sh` .
+
+### Fixed
+- MAJOR Fixed calculation of $`L_inf`$ error.
+
+## ********************************************************
+## Homework 1
+
 ## [Main] - 2024-02-12
 
 ### Changed
