@@ -503,7 +503,7 @@ def plot_MMS(prm_rxn, path_save = ''):
     plt.colorbar()                         # Add a colorbar for reference
     plt.xlabel('Radial position r (m)')
     plt.ylabel('Time t (s)')
-    title = "2D Plot of MMS solution : C(r, t)"
+    title = "2D Plot of MMS solution C(r, t)"
     plt.title(title)
     plt.grid(True)
     
