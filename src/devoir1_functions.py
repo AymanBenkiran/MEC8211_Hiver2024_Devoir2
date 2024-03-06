@@ -500,13 +500,13 @@ def plot_MMS(prm_rxn, path_save = ''):
     plt.title(title)
     plt.grid(True)
     
-    # Save the figure in data folder
-    if path_save != '':
-        os.chdir(path_save)
-        if title != '':
-            plt.savefig(title+".png", dpi=600)
-        else:
-            plt.savefig("Solution C_mms.png", dpi=600)
+    # # Save the figure in data folder
+    # if path_save != '':
+    #     os.chdir(path_save)
+    #     if title != '':
+    #         plt.savefig(title+".png", dpi=600)
+    #     else:
+    #         plt.savefig("Solution C_mms.png", dpi=600)
     
     plt.show()
     
