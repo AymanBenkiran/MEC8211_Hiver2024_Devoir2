@@ -13,13 +13,36 @@ import numpy as np
 
 # Importation des fonctions
 try:
-    from devoir2_functions import (mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
+    from devoir2_functions import (MMS_Func, mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
                                    erreur_l2, erreur_linfty)
     from devoir2_main import (ParametresProb)
     from devoir2_postresults import (ordre_convergence)
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir2_functions.py ou devoir2_main")
+
+#%% test source term
+def test_terme_source():
+    """
+    This function verifies the evaluation of source term
+    """
     
+    # Initialize an exemple of source term
+    r, t = sp.symbols('r t')
+    symbols = [r, t]
+    C_MMS = r * r + t - 1
+    source = sp.diff(C_MMS, t) - sp.diff(C_MMS,r)
+    obj_MMS = MMS_Func(C_MMS, source, r)
+    obj_MMS.lambdify((r, t))
+    
+    # Expression evaluations
+    variables = (0.5, 1.0)  
+    result_source = obj_MMS.evaluate_s(variables)
+    
+    if (result_source == 0):
+        print("L'évaluation du terme source est vérifiée")
+    else :
+        print("L'évaluation du terme source est n'est pas vérifiée")
+      
 #%% test_errors
 def test_errors():
     """
@@ -81,7 +104,7 @@ def test_errors():
 def test_solution_analytique():
     
     # Initialisation du cas d'input
-    prm_rxn_0 = ParametresProb(0)
+    prm_rxn_0 = ParametresProb(0, 'Classic')
     n_noeuds = 100
     R    = 0.5
     mesh    = np.linspace(0, R, n_noeuds)
@@ -148,3 +171,7 @@ test_solution_analytique()
 print("####################################")
 print("###Verification ordre de convergence")
 test_order_convergence()
+
+print("###################################")
+print("###Verification terme source")
+test_terme_source()
