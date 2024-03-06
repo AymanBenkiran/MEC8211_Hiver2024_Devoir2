@@ -12,19 +12,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed 
 
-- Minor Change in main to try to have a better convergence with MMS
+- MINOR Change in main to try to have a better convergence with MMS
   
 ## [Ayman_version] - 2024-03-03
 
 ### Added
 
-- Major Adding Comsol file to src folder.
+- MAJOR Adding Comsol file to src folder.
 
 ## [Ayman_version] - 2024-03-01
 
 ### Added
 
-- Major Creating two functions in functions file to evaluate analytical expressions with sympy, and visualize solution in the main.
+- MAJOR Creating two functions in functions file to evaluate analytical expressions with sympy, and visualize solution in the main.
   
 ## [Main] - 2024-02-12
 
