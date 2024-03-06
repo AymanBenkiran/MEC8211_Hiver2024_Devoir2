@@ -81,11 +81,11 @@ def plot_transient_compar(r_l, comsol_sols, sim_sols,
     i = 0
     for c_n, c_a in zip(sim_sols, comsol_sols):
         if i == 0:
-            plt.plot(r_l, c_a, "k", label = 'Solution Analytique')
+            plt.plot(r_l, c_a, "r", label = 'Solution Analytique')
             plt.plot(r_l, c_n, "b--", label = num_label)
             i += 1
         else:
-            plt.plot(r_l, c_a, "k")
+            plt.plot(r_l, c_a, "r")
             plt.plot(r_l, c_n, "b--")
     plt.xlabel("Rayon du Cylindre (m)")
     plt.ylabel(r"Concentration en sel (mol/m$^3$)")
@@ -137,13 +137,13 @@ def convergence_compar(norm_l, n_l,
         ordre, cste = np.polyfit(np.log10(n_lfit), np.log10(norm_lfit), 1)
         ordre, cste = format(ordre, '.2f'), format(cste, '.2f')
 
-        if typAnalyse == "Spatial":
+        # if typAnalyse == "Spatial":
 
-            label_norm = name_norm + '   ' + f'$log(\epsilon) = {ordre} log(\Delta r) + {cste}$'
-            plt.loglog(n_l, norm_l, "s-", label = label_norm)
+        label_norm = name_norm + '   ' + f'$log(\epsilon) = {ordre} log(\Delta r) + {cste}$'
+        plt.loglog(n_l, norm_l, "s-", label = label_norm)
 
-        else:
-            plt.loglog(n_l, norm_l, "s-", label = name_norm)
+        # else:
+        #     plt.loglog(n_l, norm_l, "s-", label = name_norm)
 
     if typAnalyse == "Spatial":
 
