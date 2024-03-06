@@ -393,7 +393,7 @@ def analytique(prm_prob, mesh, method = "Classic", tools =()):
             c = [0.25*prm_prob.s/prm_prob.d_eff * prm_prob.r**2 * (r**2/prm_prob.r**2 - 1)
                 + prm_prob.ce for r in mesh]
         else:
-            c = []
+            c = np.empty((0, len(mesh)))
             file = f"../data/comsol_solutions/solutions_COMSOL_N{len(mesh)}.csv"
 
             with (open(file, 'r') as f):
@@ -402,7 +402,8 @@ def analytique(prm_prob, mesh, method = "Classic", tools =()):
 
             df_comsol = pd.read_csv(file)
             for time in first_line:
-                c.append(df_comsol.loc[:, f"{time}"].values)
+                c = np.append(c, [df_comsol.loc[:, f"{time}"].values], axis=0)
+                # c.append(df_comsol.loc[:, f"{time}"].values)
 
     elif method == "MMS":
         func = prm_prob.MMS
