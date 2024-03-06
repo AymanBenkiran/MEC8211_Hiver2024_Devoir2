@@ -44,6 +44,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - MAJOR Entire process to manage MMS analysis, for spatial and temporal convergence in "devoir2_postresults.py","devoir2-functions.py" and "devoir2_mains.py"
 - MAJOR Creating a plot function to plot MMS solution.
 
+- MINOR Added a script to clean up exported solution csv files from COMSOL `data/cleanup_solution_files.sh` .
+
 ### Changed 
 
 - MINOR Change in main to try to have a better convergence with MMS
@@ -58,7 +60,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MAJOR Creating a new branch.
 - Minor Try different dt and dx values to look for a better convergence
-    
+
 ## [Main] - 2024-03-03
 
 ### Added
@@ -77,8 +79,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MAJOR Creating two functions in functions file to evaluate analytical expressions with sympy, and visualize solution in the main.
 
-- MINOR Added a script to clean up exported solutionm csv files from COMSOL`data/cleanup_solution_files.sh` .
-
 ### Changed
 
 - MINOR Outputted results files are now organized in subfolders.
@@ -87,20 +87,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MAJOR Fixed calculation of $`L_inf`$ error.
 
-
-## [Main] - 2024-03-04
-
-### Added
-
-- MINOR 
-
-### Changed
-
-- MINOR 
-
-### Fixed
-
-- MAJOR 
 
 ## ********************************************************
 ## Homework 1
