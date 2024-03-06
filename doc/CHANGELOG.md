@@ -8,7 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## ********************************************************
 ## Homework 2
 
+## [Ayman_version] - 2024-03-06
 
+### Removed
+
+- MAJOR Deleting the branch to try to solve an empty file issu in the current branch.
+  
 ## [Main] - 2024-03-05
 
 ### Added
