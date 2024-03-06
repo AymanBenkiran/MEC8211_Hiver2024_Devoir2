@@ -81,7 +81,7 @@ def test_errors():
 def test_solution_analytique():
     
     # Initialisation du cas d'input
-    prm_rxn_0 = ParametresProb(0)
+    prm_rxn_0 = ParametresProb(0, 'Classic')
     n_noeuds = 100
     R    = 0.5
     mesh    = np.linspace(0, R, n_noeuds)
@@ -144,6 +144,8 @@ test_errors()
 print("####################################")
 print("###Verification solution analytique")
 test_solution_analytique()
+
+
 
 print("####################################")
 print("###Verification ordre de convergence")
