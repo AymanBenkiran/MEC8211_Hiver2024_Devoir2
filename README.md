@@ -10,7 +10,7 @@ Amishga Alphonius, Ayman Benkiran, and Maxence Farin.
 
 This codes solves the stationary state salt concentration ($`C`$) in an under-water cylindrical concrete pillar. The problem is modeled as follows:
 
-$`\frac{\partial C}{\partial t} = D_\mathrm{eff} \nabla^2 C - k C`$
+$`\frac{\partial C}{\partial t} = D_\mathrm{eff} \nabla^2 C - S`$
 
 where $`D_\mathrm{eff}`$ is the effective diffusion coefficient of salt and $`S`$ is the source term from a reaction between the salt and a concrete component.
 
