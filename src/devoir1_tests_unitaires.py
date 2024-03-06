@@ -10,16 +10,40 @@ Date de creation du fichier : 5 février 2024
 
 #%% Importation des modules
 import numpy as np
+import sympy as sp
 
 # Importation des fonctions
 try:
-    from devoir1_functions import (mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
+    from devoir1_functions import (MMS_Func, mdf1_rxn_0, mdf2_rxn_0, analytique, erreur_l1,
                                    erreur_l2, erreur_linfty)
     from devoir1_main import (ParametresProb)
     from devoir1_postresults import (ordre_convergence)
 except ImportError:
     print("ERREUR ! Il y a une erreur fatale dans le fichier devoir1_functions.py ou devoir1_main")
     
+#%% test source term
+def test_terme_source():
+    """
+    This function verifies the evaluation of source term
+    """
+    
+    # Initialize an exemple of source term
+    r, t = sp.symbols('r t')
+    symbols = [r, t]
+    C_MMS = r * r + t - 1
+    source = sp.diff(C_MMS, t) - sp.diff(C_MMS,r)
+    obj_MMS = MMS_Func(C_MMS, source, r)
+    obj_MMS.lambdify((r, t))
+    
+    # Expression evaluations
+    variables = (0.5, 1.0)  
+    result_source = obj_MMS.evaluate_s(variables)
+    
+    if (result_source == 0):
+        print("L'évaluation du terme source est vérifiée")
+    else :
+        print("L'évaluation du terme source est n'est pas vérifiée")
+        
 #%% test_errors
 def test_errors():
     """
@@ -146,7 +170,10 @@ print("###Verification solution analytique")
 test_solution_analytique()
 
 
-
 print("####################################")
 print("###Verification ordre de convergence")
 test_order_convergence()
+
+print("###################################")
+print("###Verification terme source")
+test_terme_source()
