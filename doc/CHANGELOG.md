@@ -18,7 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed 
 
 - MINOR Change in main to try to have a better convergence with MMS
-  
+
+## [Ayman_test] - 2024-03-03
+
+### Added
+
+- MAJOR Creating a new branch.
+- Minor Try different dt and dx values to look for a better convergence
+    
 ## [Main] - 2024-03-03
 
 ### Added
