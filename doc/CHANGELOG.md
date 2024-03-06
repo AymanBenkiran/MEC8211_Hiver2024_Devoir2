@@ -20,6 +20,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - MAJOR Adding Comsol file to src folder.
 
+- ## [Main] - 2024-03-02
+
+### Added
+
+- MAJOR Merge Ayman_version branch to the Main.
+
 ## [Ayman_version] - 2024-03-01
 
 ### Added
