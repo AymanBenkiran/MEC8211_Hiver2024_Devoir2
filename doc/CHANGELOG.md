@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- MAJOR Add a PowerPoint file containing results and discussions about homework 2 to doc folder. 
+
+## [Main] - 2024-03-06
+
+### Added
+
 - MAJOR Results from temporal analysis for MMS, in results directory. Results given for total simulation time of 0.5s and 1s
 - MINOR Added convergence results from MMS with final method
 
@@ -52,7 +58,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- MAJOR Fixed calculation of $`L_inf`$ error.
+- MAJOR Fixed calculation of $`L_{inf}`$ error.
 
 ## [Ayman_test] - 2024-03-03
 
