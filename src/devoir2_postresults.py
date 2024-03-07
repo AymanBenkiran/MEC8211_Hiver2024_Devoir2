@@ -11,6 +11,7 @@ Date de creation du fichier : 10 février 2024
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from math import ceil
 from moviepy.editor import VideoClip
 from moviepy.video.io.bindings import mplfig_to_npimage
 
