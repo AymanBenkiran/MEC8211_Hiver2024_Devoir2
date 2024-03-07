@@ -118,13 +118,12 @@ prm_rxn_1 = ParametresProb(ordre_de_rxn = 1, p_study_type = study)
 
 # %% Discretisation pour la reaction d'ordre 1
 
-n_noeuds_liste = [80, 160, 320, 640, 1280] # Liste de nombre de noeuds pour les differents
+n_noeuds_liste = [80, 160, 320, 640] # Liste de nombre de noeuds pour les differents
                                             # maillages [noeud]
 
 # Initialisation du temps de simulation et du pas de temps
 if prm_rxn_1.study_type == "Classic":
-    dt_f_prob, tf_prob = 5e6, 1e10
-    dt_factors_list = [1, 2, 4, 8]
+    dt_f_prob, tf_prob = 5e1, 1e5
 elif prm_rxn_1.study_type == "MMS":
     dt_f_prob, tf_prob = 0.5*1e-2**2/prm_rxn_1.d_eff, 1
     dt_factors_list = [10 * prm_rxn_1.d_eff]
@@ -135,6 +134,9 @@ prm_simulations_mdf2_rxn1_dt = []
 for i, n_noeuds in enumerate(n_noeuds_liste):
     prm_simulations_mdf2_rxn1_dr.append(ParametresSim(prm_rxn_1, n_noeuds, 2, dt_f_prob, tf_prob,
                                                       "Spatial"))
+if prm_rxn_1.study_type == "Classic":
+    dt_f_prob, tf_prob = 1e9, 1e12
+    dt_factors_list = [1, 2, 4, 8]
 for i, dt_factor in enumerate(dt_factors_list):
     prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 160, 2, dt_f_prob*dt_factor, tf_prob,
                                                       "Temporal"))
@@ -193,19 +195,6 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
         print(f"dt = {prm_sim.dt} s")
         print(f"tf = {prm_sim.tf} s")
 print("****************************************************************************")
-
-# For movie... later
-# fig = plt.figure()
-# ax = plt.Subplot(fig, 111)
-# fig.set_figheight(6)
-# fig.set_figwidth(10)
-# prm_sim = prm_simulations_mdf2_rxn1_dr[-1]
-# xi, yi = np.meshgrid(prm_sim.mesh, np.linspace(0,1,2))
-# z = np.array([prm_sim.c[-1, :],prm_sim.c[-1, :]])
-# plt.contourf(xi, yi, z)
-# ax.set_yticks([])
-# plt.colorbar()
-# plt.show()
 
 # %% Plot la solution MMS choisie
 
@@ -288,20 +277,21 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
             liste_erreur_l2.append(err_l2/n_temps)
             liste_erreur_linfty.append(err_linf/n_temps)
 
-            # Etude au demi-temps (t=tf/2)
-            temps_i = int(np.ceil(n_temps/2)-1)
-            solution_numerique = prm_sim.c[temps_i,:]
-            solution_analytique = c_analytique[temps_i,:]
-            liste_erreur_l1_demi_temps.append(erreur_l1(solution_numerique, solution_analytique))
-            liste_erreur_l2_demi_temps.append(erreur_l2(solution_numerique, solution_analytique))
-            liste_erreur_linfty_demi_temps.append(erreur_linfty(solution_numerique, solution_analytique))
+            if prm_simulation[0].study_type == "Spatial":
+                # Etude au demi-temps (t=tf/2)
+                temps_i = int(np.ceil(n_temps/2)-1)
+                solution_numerique = prm_sim.c[temps_i,:]
+                solution_analytique = c_analytique[temps_i,:]
+                liste_erreur_l1_demi_temps.append(erreur_l1(solution_numerique, solution_analytique))
+                liste_erreur_l2_demi_temps.append(erreur_l2(solution_numerique, solution_analytique))
+                liste_erreur_linfty_demi_temps.append(erreur_linfty(solution_numerique, solution_analytique))
 
-            # Etude au temps final (t=tf)
-            solution_numerique = prm_sim.c[-1, :]
-            solution_analytique = c_analytique[-1,:]
-            liste_erreur_l1_temps_final.append(erreur_l1(solution_numerique, solution_analytique))
-            liste_erreur_l2_temps_final.append(erreur_l2(solution_numerique, solution_analytique))
-            liste_erreur_linfty_temps_final.append(erreur_linfty(solution_numerique, solution_analytique))
+                # Etude au temps final (t=tf)
+                solution_numerique = prm_sim.c[-1, :]
+                solution_analytique = c_analytique[-1,:]
+                liste_erreur_l1_temps_final.append(erreur_l1(solution_numerique, solution_analytique))
+                liste_erreur_l2_temps_final.append(erreur_l2(solution_numerique, solution_analytique))
+                liste_erreur_linfty_temps_final.append(erreur_linfty(solution_numerique, solution_analytique))
 
 
         # Comparaison graphique des solutions
@@ -322,30 +312,30 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
                                     title=f"./{result_subfolder}/{title_analytique}",
                                     num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
                                               f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})")
+            if prm_simulation[0].study_type == "Spatial":
+                errors_l_demi_temps = [('Erreur $L^1$', liste_erreur_l1_demi_temps),
+                                       ('Erreur $L^2$', liste_erreur_l2_demi_temps),
+                                       ('Erreur $L^\inf$', liste_erreur_linfty_demi_temps)]
+                errors_l_temps_final = [('Erreur $L^1$', liste_erreur_l1_temps_final),
+                                        ('Erreur $L^2$', liste_erreur_l2_temps_final),
+                                        ('Erreur $L^\inf$', liste_erreur_linfty_temps_final)]
 
-            # Solution au demi-temps (t=tf/2)
-            plot_stationnary_compar(prm_sim.mesh, c_analytique[temps_i,:], c_numerique[temps_i,:],
-                                    plotting=False,
-                                    path_save=path_analyse,
-                                    title=f"./{result_subfolder}/demi_temps/{title_analytique}",
-                                    num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
-                                              f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})\n"
-                                              f" à t={'{:.1e}'.format(prm_sim.t[temps_i])} s")
-            errors_l_demi_temps = [('Erreur $L^1$', liste_erreur_l1_demi_temps),
-                                   ('Erreur $L^2$', liste_erreur_l2_demi_temps),
-                                   ('Erreur $L^\inf$', liste_erreur_linfty_demi_temps)]
-            errors_l_temps_final = [('Erreur $L^1$', liste_erreur_l1_temps_final),
-                                    ('Erreur $L^2$', liste_erreur_l2_temps_final),
-                                    ('Erreur $L^\inf$', liste_erreur_linfty_temps_final)]
-
-            # Solution au temps final
-            plot_stationnary_compar(prm_sim.mesh, c_analytique[-1,:], c_numerique[-1,:],
-                                    plotting=False,
-                                    path_save=path_analyse,
-                                    title=f"./{result_subfolder}/temps_final/{title_analytique}",
-                                    num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
-                                              f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})\n"
-                                              f" à t={'{:.1e}'.format(prm_sim.tf)} s")
+                # Solution au demi-temps (t=tf/2)
+                plot_stationnary_compar(prm_sim.mesh, c_analytique[temps_i,:], c_numerique[temps_i,:],
+                                        plotting=False,
+                                        path_save=path_analyse,
+                                        title=f"./{result_subfolder}/demi_temps/{title_analytique}",
+                                        num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
+                                                  f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})\n"
+                                                  f" à t={'{:.1e}'.format(prm_sim.t[temps_i])} s")
+                # Solution au temps final
+                plot_stationnary_compar(prm_sim.mesh, c_analytique[-1,:], c_numerique[-1,:],
+                                        plotting=False,
+                                        path_save=path_analyse,
+                                        title=f"./{result_subfolder}/temps_final/{title_analytique}",
+                                        num_label=f"Solution par Différences Finies \n (mdf{mdf_i},"
+                                                  f" n={n_noeuds}, dt={'{:.1e}'.format(dt_i)})\n"
+                                                  f" à t={'{:.1e}'.format(prm_sim.tf)} s")
             dt_factor_i += 1
 
     # Pour l'affichage graphique
@@ -369,12 +359,12 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
         if ordre_de_rxn == 1:
             convergence_compar(errors_l_demi_temps, dr,
                                typAnalyse=prm_simulation[0].study_type,
-                               n_fit=n_fit,
+                               n_fit=2,
                                path_save=path_analyse,
                                title=f"./{result_subfolder}/demi_temps/{title_errors}")
             convergence_compar(errors_l_temps_final, dr,
                                typAnalyse=prm_simulation[0].study_type,
-                               n_fit=n_fit,
+                               n_fit=2,
                                path_save=path_analyse,
                                title=f"./{result_subfolder}/temps_final/{title_errors}")
         # Pour la verification des ordres numeriques
@@ -387,21 +377,11 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
         # Pour l'affichage graphique
         convergence_compar(errors_l, dt,
                            typAnalyse=prm_simulation[0].study_type,
-                           n_fit = n_fit,
+                           n_fit=2,
                            path_save=path_analyse,
                            title=f"./{result_subfolder}/{title_errors}")
 
         if ordre_de_rxn == 1:
-            convergence_compar(errors_l_demi_temps, dt,
-                               typAnalyse=prm_simulation[0].study_type,
-                               n_fit=n_fit,
-                               path_save=path_analyse,
-                               title=f"./{result_subfolder}/demi_temps/{title_errors}")
-            convergence_compar(errors_l_temps_final, dt,
-                               typAnalyse=prm_simulation[0].study_type,
-                               n_fit=n_fit,
-                               path_save=path_analyse,
-                               title=f"./{result_subfolder}/temps_final/{title_errors}")
             # Pour la verification des ordres numeriques
             type_detude_str = "temps"
 
@@ -417,9 +397,9 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
         name_norm = name_error.split()[-1]
         ordre_theorique = prm_simulation[0].mdf
         if prm_simulation[0].study_type == "Spatial":
-            ordre = ordre_convergence(dr, norm, n_fit = n_fit)
+            ordre = ordre_convergence(dr, norm, n_fit=n_fit)
         elif prm_simulation[0].study_type == "Temporal":
-            ordre = ordre_convergence(dt, norm, n_fit = n_fit)
+            ordre = ordre_convergence(dt, norm, n_fit=n_fit)
             ordre_theorique = 1
         print(f"L'ordre observe du schema numerique en {type_detude_str} est {ordre} "
               f"pour la norme {name_norm}")

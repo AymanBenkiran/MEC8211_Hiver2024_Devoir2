@@ -103,9 +103,6 @@ def plot_transient_compar(r_l, comsol_sols, sim_sols,
     if plotting is True:
         plt.show()
 
-#%% Video
-
-# def make_film (r, y, c, )
 
 #%% Erreurs
 
@@ -134,25 +131,22 @@ def convergence_compar(norm_l, n_l,
             n_lfit, norm_lfit = n_l[:n_fit], norm_l[:n_fit]
         else:
             n_lfit, norm_lfit = n_l, norm_l
-        
+
         ordre, cste = np.polyfit(np.log10(n_lfit), np.log10(norm_lfit), 1)
         ordre, cste = format((ceil(100*ordre)/100), '.2f'), format((ceil(100*cste)/100), '.2f')
 
-        # if typAnalyse == "Spatial":
+        if typAnalyse == "Spatial":
+            label_norm = name_norm + '   ' + f'$log(\epsilon) = {ordre} log(\Delta r) + {cste}$'
+        elif typAnalyse == "Temporal":
+            label_norm = name_norm + '   ' + f'$log(\epsilon) = {ordre} log(\Delta t) + {cste}$'
 
-        label_norm = name_norm + '   ' + f'$log(\epsilon) = {ordre} log(\Delta r) + {cste}$'
-        plt.loglog(n_l, norm_l, "s-", label = label_norm)
-
-        # else:
-        #     plt.loglog(n_l, norm_l, "s-", label = name_norm)
+        plt.loglog(n_l, norm_l, "s-", label=label_norm)
 
     if typAnalyse == "Spatial":
-
         plt.title("Convergence Spatiale: Évolution des Erreurs dans le cylindre")
         plt.xlabel(r"$\Delta r$ [m]")
 
-    if typAnalyse == "Temporal":
-
+    elif typAnalyse == "Temporal":
         plt.title("Convergence Temporelle: Évolution des Erreurs dans le cylindre")
         plt.xlabel(r"$\Delta t$ [s]")
 
