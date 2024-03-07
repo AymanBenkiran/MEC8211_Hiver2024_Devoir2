@@ -135,7 +135,7 @@ def convergence_compar(norm_l, n_l,
             n_lfit, norm_lfit = n_l, norm_l
         
         ordre, cste = np.polyfit(np.log10(n_lfit), np.log10(norm_lfit), 1)
-        ordre, cste = format(ordre, '.2f'), format(cste, '.2f')
+        ordre, cste = format((ceil(100*ordre)/100), '.2f'), format((ceil(100*cste)/100), '.2f')
 
         # if typAnalyse == "Spatial":
 
