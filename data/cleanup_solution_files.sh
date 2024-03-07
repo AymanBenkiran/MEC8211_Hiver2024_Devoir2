@@ -16,7 +16,7 @@
 # Folder with solutions
 FOLDER="./comsol_solutions/"
 # Get a list of the csv files
-FILES_LIST=$(ls $FOLDER)
+FILES_LIST=$(ls $FOLDER | grep .csv)
 # Define the lines to delete
 LINES_TO_DELETE=$(echo {1..7})
 
