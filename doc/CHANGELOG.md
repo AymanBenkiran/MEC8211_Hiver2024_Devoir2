@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - MAJOR Results from temporal analysis for MMS, in results directory. Results given for total simulation time of 0.5s and 1s
+- MINOR Added convergence results from MMS with final method
 
 ### Changed
 
