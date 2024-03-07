@@ -124,6 +124,8 @@ n_noeuds_liste = [80, 160, 320, 640] # Liste de nombre de noeuds pour les differ
 # Initialisation du temps de simulation et du pas de temps
 if prm_rxn_1.study_type == "Classic":
     dt_f_prob, tf_prob = 5e1, 1e5
+    dt_f_prob_temp, tf_prob_temp = 5e6, 1e10
+    dt_factors_list = [8, 4, 2, 1]
 elif prm_rxn_1.study_type == "MMS":
     dt_f_prob, tf_prob = 0.5*1e-2**2/prm_rxn_1.d_eff, 1
     dt_factors_list = [10 * prm_rxn_1.d_eff]
@@ -131,14 +133,13 @@ elif prm_rxn_1.study_type == "MMS":
 # Initialisation des differents maillages a l'etude
 prm_simulations_mdf2_rxn1_dr = []
 prm_simulations_mdf2_rxn1_dt = []
+# Pour la convergence spatiale
 for i, n_noeuds in enumerate(n_noeuds_liste):
     prm_simulations_mdf2_rxn1_dr.append(ParametresSim(prm_rxn_1, n_noeuds, 2, dt_f_prob, tf_prob,
-                                                      "Spatial"))
-if prm_rxn_1.study_type == "Classic":
-    dt_f_prob, tf_prob = 1e9, 1e12
-    dt_factors_list = [1, 2, 4, 8]
+                                                   "Spatial"))
+# Pour la convergence temporelle
 for i, dt_factor in enumerate(dt_factors_list):
-    prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 160, 2, dt_f_prob*dt_factor, tf_prob,
+    prm_simulations_mdf2_rxn1_dt.append(ParametresSim(prm_rxn_1, 160, 2, dt_f_prob_temp*dt_factor, tf_prob_temp,
                                                       "Temporal"))
 
 # %% Création des Répertoires de Solution
@@ -377,7 +378,7 @@ for prm_simulation in [prm_simulations_mdf2_rxn1_dr, prm_simulations_mdf2_rxn1_d
         # Pour l'affichage graphique
         convergence_compar(errors_l, dt,
                            typAnalyse=prm_simulation[0].study_type,
-                           n_fit=2,
+                           n_fit=n_fit,
                            path_save=path_analyse,
                            title=f"./{result_subfolder}/{title_errors}")
 
